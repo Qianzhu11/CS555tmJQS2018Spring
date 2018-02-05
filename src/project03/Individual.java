@@ -1,3 +1,4 @@
+package project03;
 
 public class Individual {
 	private String id;
