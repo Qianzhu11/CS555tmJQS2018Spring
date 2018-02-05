@@ -1,3 +1,3 @@
-# CS_555 gourp project
+# CS555tmJQS2018Spring
 
 Member: Suchita Dmello, Jingting Zhang, Qian Zhu.
