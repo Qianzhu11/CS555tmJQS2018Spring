@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,16 +45,19 @@ public class GedcomReader {
 	}
 	
 	public void writeIndividual() {
+		individuals = new ArrayList<Individual>();
+		families = new ArrayList<Family>();
+		map = new HashMap<String, Individual>();
 		for (int i = 0; i < information.size(); i++) {
 			List<String> list = sliceInformation(information.get(i));
 			if (list.get(0).equals("0") && list.get(list.size() - 1).equals("INDI")) {
 				Individual individual = new Individual();
-				individuals.add(individual);
 				String id = list.get(1).replaceAll("@", "");
 				individual.setId(id);
 				map.put(id, individual);
 				individual.setAlive(true);
 				individual.setDeath("NA");
+				individuals.add(individual);
 			} else if (list.get(0).equals("0") && !list.get(list.size() - 1).equals("INDI")) {
 				for (int j = i + 1; j < information.size(); j++) {
 					List<String> temp = sliceInformation(information.get(j));
@@ -65,7 +69,7 @@ public class GedcomReader {
 			} else if (list.get(1).equals("NAME")) {
 				String name = "";
 				for (int j = 2; j < list.size(); j++) {
-					name += list.get(i) + " ";
+					name += list.get(j) + " ";
 				}
 				name = name.trim();
 				individuals.get(individuals.size() - 1).setName(name);;
@@ -114,6 +118,7 @@ public class GedcomReader {
 				Family family = new Family();
 				family.setId(list.get(1).replaceAll("@", ""));
 				family.setDivorced("NA");
+				families.add(family);
 			} else if (list.get(1).equals("MARR")) {
 				List<String> temp = sliceInformation(information.get(++i));
 				String year = temp.get(4);
@@ -141,7 +146,13 @@ public class GedcomReader {
 			} else if (list.get(1).equals("CHIL")) {
 				String childernId = list.get(2);
 				childernId = childernId.replaceAll("@", "");
-				families.get(families.size() - 1).getChildren().add(childernId);
+				Family family = families.get(families.size() - 1);
+				List<String> temp = family.getChildren();
+				if (temp == null) {
+					temp = new ArrayList<String>();
+				}
+				temp.add(childernId);
+				family.setChildren(temp);
 			}
 		}
 	}
@@ -179,8 +190,9 @@ public class GedcomReader {
 	
 	public static void main(String[] args) {
 		GedcomReader gr = new GedcomReader();
-		gr.readFile("My-Family-23-Jan-2018-889.ged");
+		gr.readFile("123.txt");
 		gr.writeIndividual();
 		gr.writeFamily();
+		
 	}
 }
