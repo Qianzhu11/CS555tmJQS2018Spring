@@ -9,7 +9,7 @@ public class Family {
 	private String husbandName;
 	private String wifeId;
 	private String wifeName;
-	private List<Individual> children;
+	private List<String> children;
 	
 	public String getId() {
 		return id;
@@ -53,10 +53,10 @@ public class Family {
 	public void setWifeName(String wifeName) {
 		this.wifeName = wifeName;
 	}
-	public List<Individual> getChildren() {
+	public List<String> getChildren() {
 		return children;
 	}
-	public void setChildren(List<Individual> children) {
+	public void setChildren(List<String> children) {
 		this.children = children;
 	}
 }
