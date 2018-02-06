@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,6 +58,8 @@ public class GedcomReader {
 				map.put(id, individual);
 				individual.setAlive(true);
 				individual.setDeath("NA");
+				individual.setChild("NA");
+				individual.setSpouse("NA");
 				individuals.add(individual);
 			} else if (list.get(0).equals("0") && !list.get(list.size() - 1).equals("INDI")) {
 				for (int j = i + 1; j < information.size(); j++) {
@@ -99,11 +102,11 @@ public class GedcomReader {
 				Individual individual = individuals.get(individuals.size() - 1);
 				individual.setDeath((year + month + day));
 				individual.setAlive(false);
-			} else if (list.get(1) == "FAMC") {
+			} else if (list.get(1).equals("FAMC")) {
 				String familyId = list.get(2).replaceAll("@", "");
 				Individual individual = individuals.get(individuals.size() - 1);
 				individual.setChild(familyId);
-			} else if (list.get(1) == "FAMS") {
+			} else if (list.get(1).equals("FAMS")) {
 				String familyId = list.get(2).replaceAll("@", "");
 				Individual individual = individuals.get(individuals.size() - 1);
 				individual.setSpouse(familyId);
@@ -190,9 +193,18 @@ public class GedcomReader {
 	
 	public static void main(String[] args) {
 		GedcomReader gr = new GedcomReader();
-		gr.readFile("123.txt");
+		gr.readFile("My-Family-23-Jan-2018-889.ged");
 		gr.writeIndividual();
-		gr.writeFamily();
-		
+		Collections.sort(gr.individuals, new sortIndividual());
+		//gr.writeFamily();
+		System.out.println("Individuals");
+		System.out.println("+-----+--------------------+--------+-----------+-----+-------+------------+-----------+-----------+");
+		System.out.println("| ID  | Name               | Gender | Birthday  | Age | Alive | Death      | Child     | Spouse    |");
+		System.out.println("+-----+--------------------+--------+-----------+-----+-------+------------+-----------+-----------+");
+		for (Individual i : gr.individuals) {
+			System.out.printf("|%-5s|%-20s|%-8s|%-11s|%-5d|%-7b|%-12s|%-11s|%-11s|%n", i.getId(), i.getName(), i.getGender(), i.getBrithday(), i.getAge(), i.isAlive(), i.getDeath(), "{'" + i.getChild() + "'}", "{'" + i.getSpouse() + "'}");
+		}
+		System.out.println("+-----+--------------------+--------+-----------+-----+-------+------------+-----------+-----------+");
+		System.out.println("Families");
 	}
 }

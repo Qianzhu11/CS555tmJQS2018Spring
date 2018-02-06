@@ -1,5 +1,7 @@
 package project03;
 
+import java.util.Comparator;
+
 public class Individual {
 	private String id;
 	private String name;
@@ -65,4 +67,17 @@ public class Individual {
 	public void setSpouse(String spouse) {
 		this.spouse = spouse;
 	}
+}
+
+class sortIndividual implements Comparator<Individual> {
+
+	@Override
+	public int compare(Individual o1, Individual o2) {
+		String s1 = o1.getId();
+		String s2 = o2.getId();
+		int i = Integer.parseInt(s1.substring(1));
+		int j = Integer.parseInt(s2.substring(1));
+		return i - j;
+	}
+	
 }
