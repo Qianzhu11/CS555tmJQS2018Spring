@@ -117,7 +117,7 @@ public class GedcomReader {
 	public void writeFamily() {
 		for (int i = 0; i < information.size(); i++) {
 			List<String> list = sliceInformation(information.get(i));
-			if (list.get(0).equals("0") && list.get(2).equals("FAM")) {
+			if (list.get(0).equals("0") && list.size() >= 3 && list.get(2).equals("FAM")) {
 				Family family = new Family();
 				family.setId(list.get(1).replaceAll("@", ""));
 				family.setDivorced("NA");
@@ -132,6 +132,16 @@ public class GedcomReader {
 				}
 				day = "-" + day;
 				families.get(families.size() - 1).setMarried(year + month + day);
+			} else if (list.get(1).equals("DIV")) {
+				List<String> temp = sliceInformation(information.get(++i));
+				String year = temp.get(4);
+				String month = convertMonth(temp.get(3));
+				String day = temp.get(2);
+				if (day.length() == 1) {
+					day = "0" + day;
+				}
+				day = "-" + day;
+				families.get(families.size() - 1).setDivorced(year + month );
 			} else if (list.get(1).equals("HUSB")) {
 				String husbandId = list.get(2);
 				husbandId = husbandId.replaceAll("@", "");
@@ -193,10 +203,13 @@ public class GedcomReader {
 	
 	public static void main(String[] args) {
 		GedcomReader gr = new GedcomReader();
-		gr.readFile("My-Family-23-Jan-2018-889.ged");
+		gr.readFile("Project01_JingtingZhang.ged");
 		gr.writeIndividual();
-		Collections.sort(gr.individuals, new sortIndividual());
-		//gr.writeFamily();
+		gr.writeFamily();
+		Collections.sort(gr.individuals, new SortIndividual());
+		Collections.sort(gr.families, new SortFamily());
+		
+
 		System.out.println("Individuals");
 		System.out.println("+-----+--------------------+--------+-----------+-----+-------+------------+-----------+-----------+");
 		System.out.println("| ID  | Name               | Gender | Birthday  | Age | Alive | Death      | Child     | Spouse    |");
@@ -206,5 +219,11 @@ public class GedcomReader {
 		}
 		System.out.println("+-----+--------------------+--------+-----------+-----+-------+------------+-----------+-----------+");
 		System.out.println("Families");
+		System.out.println("+-----+------------+------------+------------+--------------------+-----------+--------------------+------------------+");
+		System.out.println("| ID  | Married    | Divorced   | Husband ID | Husband Name       | Wife ID   | Wife Name          | Childern         |");
+		for (Family f : gr.families) {
+			System.out.printf("|%-5s|%-12s|%-12s|%-12s|%-20s|%-11s|%-20s|%-18s|%n", f.getId(), f.getMarried(), f.getDivorced(), f.getHusbandId(), f.getHusbandName(), f.getWifeId(), f.getWifeName(), "{" + f.getChildren().toString() + "}");
+		}
+		System.out.println("+-----+------------+------------+------------+--------------------+-----------+--------------------+------------------+");
 	}
 }

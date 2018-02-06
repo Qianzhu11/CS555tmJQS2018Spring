@@ -69,7 +69,7 @@ public class Individual {
 	}
 }
 
-class sortIndividual implements Comparator<Individual> {
+class SortIndividual implements Comparator<Individual> {
 
 	@Override
 	public int compare(Individual o1, Individual o2) {
