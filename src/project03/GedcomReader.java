@@ -51,7 +51,7 @@ public class GedcomReader {
 					Individual individual = new Individual();
 					String id = list.get(1);
 					individual.setId(id.substring(1, id.length() - 1));
-				}
+				} 
 			}
 		}
 	}
