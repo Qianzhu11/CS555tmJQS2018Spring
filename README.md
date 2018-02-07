@@ -1,3 +1,3 @@
-# CS555tmJQS2018Spring
+# CS555tmJQSS2018Spring
 
-Member: Suchita Dmello, Jingting Zhang, Qian Zhu.
+Member: Suchita Dmello, Sivannarayana Ravipati, Jingting Zhang, Qian Zhu.
