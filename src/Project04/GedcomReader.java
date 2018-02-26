@@ -105,6 +105,7 @@ public class GedcomReader {
 				Individual individual = individuals.get(individuals.size() - 1);
 				individual.setDeath((year + month + day));
 				individual.setAlive(false);
+				individual.setAge(individual.getAge() - 2018 + Integer.parseInt(year));
 			} else if (list.get(1).equals("FAMC")) {
 				String familyId = list.get(2).replaceAll("@", "");
 				Individual individual = individuals.get(individuals.size() - 1);
@@ -279,6 +280,10 @@ public class GedcomReader {
 			return true;
 		} 
 		return false;
+	}
+	
+	public boolean ageLessThan150(Individual individual) {
+		return individual.getAge() < 150;
 	}
 	
 	public static void main(String[] args) {

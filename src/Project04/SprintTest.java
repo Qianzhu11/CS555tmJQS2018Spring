@@ -146,6 +146,13 @@ public class SprintTest {
 	
 	@Test
 	public void testUserStory07() {
-		
+		List<Individual> individuals = gr.individuals;
+		for (Individual individual: individuals) {
+			if (individual.getDeath().equals("NA")) {
+				assertTrue("ERROR: INDIVIDUAL: US07: " + individual.getId() + ": More than 150 years old - Bitrh date " + individual.getBrithday(), gr.ageLessThan150(individual));
+			} else {
+				assertTrue("ERROR: INDIVIDUAL: US07: " + individual.getId() + ": More than 150 years old at death - Bitrh date " + individual.getBrithday() + ": Death " + individual.getDeath(), gr.ageLessThan150(individual));
+			}
+		}
 	}
 }
