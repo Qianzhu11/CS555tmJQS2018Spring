@@ -1,5 +1,7 @@
 package Project04;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -310,5 +312,16 @@ public class GedcomReader {
 			System.out.printf("|%-5s|%-12s|%-12s|%-12s|%-20s|%-11s|%-20s|%-18s|%n", f.getId(), f.getMarried(), f.getDivorced(), f.getHusbandId(), f.getHusbandName(), f.getWifeId(), f.getWifeName(), "{" + f.getChildren().toString() + "}");
 		}
 		System.out.println("+-----+------------+------------+------------+--------------------+-----------+--------------------+------------------+");
+		System.out.println();
+		for (Individual individual : gr.individuals) {
+			String birthday = individual.getBrithday();
+			if (!gr.validateDate(birthday)) {
+				System.out.println("ERROR: INDIVIDUAL: US01: " + individual.getId() + ": " + "Birthday " + birthday + " occurs in the future");
+			}
+			String death = individual.getDeath();
+			if (!death.equals("NA") && !gr.validateDate(death)) {
+				System.out.println("ERROR: INDIVIDUAL: US01: " + individual.getId() + ": " + "Birthday " + birthday + " occurs in the future");
+			}
+		}
 	}
 }
