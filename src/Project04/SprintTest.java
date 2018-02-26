@@ -15,7 +15,7 @@ public class SprintTest {
 	
 	public SprintTest() {
 		gr = new GedcomReader();
-		gr.readFile("Biu-Family-26-Feb-2018-817.ged");
+		gr.readFile("testFile.ged");
 		gr.writeIndividual();
 		gr.writeFamily();
 	}
