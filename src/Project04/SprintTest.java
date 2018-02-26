@@ -7,7 +7,7 @@ import java.util.List;
 import org.hamcrest.core.CombinableMatcher;
 import org.junit.Test;
 
-import com.sun.org.apache.xml.internal.resolver.helpers.PublicId;
+//import com.sun.org.apache.xml.internal.resolver.helpers.PublicId;
 
 public class SprintTest {
 	
@@ -15,10 +15,12 @@ public class SprintTest {
 	
 	public SprintTest() {
 		gr = new GedcomReader();
-		gr.readFile("testFile.ged");
+		gr.readFile("Biu-Family-26-Feb-2018-817.ged");
 		gr.writeIndividual();
 		gr.writeFamily();
 	}
+	
+
 	
 	@Test
 	public void testUserStory01ForIndividual() {
@@ -138,7 +140,7 @@ public class SprintTest {
 				temp = wife;
 				who = "wife";
 			}
-			if (!family.getDivorced().equals("NA")) {
+			if (family.getDivorced().equals("NA")) {
 				assertTrue("Error: FAMILY: US06: " + family.getId() + ": Divorced " + family.getDivorced() + " after " + who + " (" + temp.getId() + ") death on " + temp.getDeath(), gr.compareDate(family.getDivorced(), temp.getDeath()));				
 			}
 		}
@@ -155,4 +157,23 @@ public class SprintTest {
 			}
 		}
 	}
+	
+	@Test
+	public void testUserStory10() {
+		List<Family> families = gr.families;
+		for (int i = 0; i < families.size(); i++) {
+			Family family = families.get(i);
+			String husbandId = family.getHusbandId();
+			String wifeId = family.getWifeId();
+			Individual husband = gr.map.get(husbandId);
+			String husbandBirthday = husband.getBrithday();
+			Individual wife = gr.map.get(wifeId);
+			String wifeBirthday = wife.getBrithday();
+			String marry = family.getMarried();
+			String divorce = family.getDivorced();
+
+			assertTrue("ERROR: FAMILY: US10: " + family.getId() + " marriage before 14", gr.validateMarriageAge(husbandBirthday, marry) || gr.validateMarriageAge(wifeBirthday, marry));
+		}
+	}
+
 }

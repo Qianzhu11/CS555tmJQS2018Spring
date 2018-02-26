@@ -1,7 +1,5 @@
 package Project04;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class GedcomReader {
 	List<String> information;
@@ -116,7 +116,7 @@ public class GedcomReader {
 				String familyId = list.get(2).replaceAll("@", "");
 				Individual individual = individuals.get(individuals.size() - 1);
 				individual.setSpouse(familyId);
-			}
+			} 
 		}
 	}
 	
@@ -207,21 +207,7 @@ public class GedcomReader {
 		return res;
 	}
 	
-	public boolean compareDate(String date1, String date2) {
-		date1 = date1.replaceAll("-", "");
-		date2 = date2.replaceAll("-", "");
-		if (date2.equals("NA")) {
-			return true;
-		}
-		if (date1.equals("NA") && !date2.equals("NA")) {
-			return false;
-		}
-		if (Integer.parseInt(date1) <= Integer.parseInt(date2)) {
-			return true;
-		}
-		return false;
-	}
-	
+	//US01
 	public boolean validateDate(String inputDate) {
 		try {
 			if (!inputDate.equalsIgnoreCase("NA")) {
@@ -240,6 +226,7 @@ public class GedcomReader {
 		return true;
 	}
 	
+	//US02
 	public boolean validateMarriageDate(String birthDate,String marriageDate) {
 		try {
 			if (!marriageDate.equalsIgnoreCase("NA")) {
@@ -257,6 +244,7 @@ public class GedcomReader {
 		return true;
 	}
 	
+	//US03
 	public boolean compareBirthtoDeath(String date1, String date2) {
 		date1 = date1.replaceAll("-", "");
 		date2 = date2.replaceAll("-", "");
@@ -270,11 +258,11 @@ public class GedcomReader {
 		return false;
 	}
 	
+	//US04
 	public boolean compareMarriagetoDivorce(String date1, String date2) {
 		date1 = date1.replaceAll("-", "");
 		date2 = date2.replaceAll("-", "");
 		if (date1 == "NA") {
-			System.out.println("The person is not married.");
 			return false;
 		} else if (date2 == "NA") {
 			return true;
@@ -284,13 +272,46 @@ public class GedcomReader {
 		return false;
 	}
 	
+	//US05&US06
+	public boolean compareDate(String date1, String date2) {
+		date1 = date1.replaceAll("-", "");
+		date2 = date2.replaceAll("-", "");
+		if (date2.equals("NA")) {
+			return true;
+		}
+		if (date1.equals("NA") && !date2.equals("NA")) {
+			return false;
+		}
+		if (Integer.parseInt(date1) <= Integer.parseInt(date2)) {
+			return true;
+		}
+		return false;
+	}
+	
+	//US07
 	public boolean ageLessThan150(Individual individual) {
 		return individual.getAge() < 150;
 	}
 	
+	//US14
+	public boolean validateMarriageAge(String date1, String date2) {
+		date1 = date1.replaceAll("-", "");
+		date2 = date2.replaceAll("-", "");
+		if (date1.equals("NA")) {
+			return false;
+		}
+		if (!date1.equals("NA") && date2.equals("NA")) {
+			return true;
+		}
+		if ((Integer.parseInt(date1) + 140000) <= Integer.parseInt(date2)) {
+			return true;
+		}
+		return false;
+	}
+		
 	public static void main(String[] args) {
 		GedcomReader gr = new GedcomReader();
-		gr.readFile("testFile.ged");
+		gr.readFile("Biu-Family-26-Feb-2018-817.ged");
 		gr.writeIndividual();
 		gr.writeFamily();
 		Collections.sort(gr.individuals, new SortIndividual());
@@ -313,6 +334,7 @@ public class GedcomReader {
 		}
 		System.out.println("+-----+------------+------------+------------+--------------------+-----------+--------------------+------------------+");
 		System.out.println();
+		
 		for (Individual individual : gr.individuals) {
 			String birthday = individual.getBrithday();
 			if (!gr.validateDate(birthday)) {
@@ -322,6 +344,73 @@ public class GedcomReader {
 			if (!death.equals("NA") && !gr.validateDate(death)) {
 				System.out.println("ERROR: INDIVIDUAL: US01: " + individual.getId() + ": " + "Birthday " + birthday + " occurs in the future");
 			}
+			
+			if(!gr.compareBirthtoDeath(birthday, death)){
+				System.out.println("ERROR: INDIVIDUAL: US03: " + individual.getId() + ": " + "Died " + death + " before born " + birthday);
+			}
+			if (individual.getDeath().equals("NA")) {
+				if(!gr.ageLessThan150(individual)){
+					System.out.println("ERROR: INDIVIDUAL: US07: " + individual.getId() + ": More than 150 years old - Bitrh date " + individual.getBrithday());
+				}
+			} else {
+				if(!gr.ageLessThan150(individual)){
+					System.out.println("ERROR: INDIVIDUAL: US07: " + individual.getId() + ": More than 150 years old at death - Bitrh date " + individual.getBrithday() + ": Death " + individual.getDeath());
+				}
+			}
+			
+		}
+		
+		List<Family> families = gr.families;
+		for (int i = 0; i < families.size(); i++) {
+			Family family = families.get(i);
+			String husbandId = family.getHusbandId();
+			String wifeId = family.getWifeId();
+			Individual husband = gr.map.get(husbandId);
+			String husbandBirthday = husband.getBrithday();
+			String husbandDeath = husband.getDeath();
+			Individual wife = gr.map.get(wifeId);
+			String wifeBirthday = wife.getBrithday();
+			String wifeDeath = wife.getDeath();
+			Individual temp;
+			String who;
+			if (gr.compareDate(husbandBirthday, wifeBirthday)) {
+				temp = wife;
+				who = "wife";
+			} else {
+				temp = husband;
+				who = "husband";
+			}
+			
+			if(!gr.validateMarriageDate(temp.getBrithday(), family.getMarried())){
+				System.out.println("ERROR: FAMILY: US02: " + family.getId() + " " +who + "'s birth date " + temp.getBrithday() + " after marriage date " + family.getMarried());
+			}
+			
+			String marry = family.getMarried();
+			String divorce = family.getDivorced();
+			if(!gr.compareMarriagetoDivorce(marry, divorce)){
+				System.out.println("ERROR: FAMILY: US04: " + family.getId() + ": Divorced " + divorce + " before married " + marry);
+			}
+			
+			if(!gr.compareDate(family.getMarried(), temp.getDeath())){
+				System.out.println("ERROR: FAMILY: US05: " + family.getId() + ": Married " + family.getMarried() + " after " + who + "'s (" + temp.getId() + ") death on " + temp.getDeath());
+			}
+			
+			if (gr.compareDate(husbandDeath, wifeDeath)) {
+				temp = husband;
+				who = "husband";
+			} else {
+				temp = wife;
+				who = "wife";
+			}
+			if (!family.getDivorced().equals("NA")) {
+				if(gr.compareDate(family.getDivorced(), temp.getDeath())){
+					System.out.println("ERROR: FAMILY: US06: " + family.getId() + ": Divorced " + family.getDivorced() + " after " + who + " (" + temp.getId() + ") death on " + temp.getDeath());				
+				}
+			}
+			if(!gr.validateMarriageAge(husbandBirthday, marry) || !gr.validateMarriageAge(wifeBirthday, marry)){
+				System.out.println("ERROR: FAMILY: US10: " + family.getId() + " marriage before 14");
+			}
+			
 		}
 	}
 }
