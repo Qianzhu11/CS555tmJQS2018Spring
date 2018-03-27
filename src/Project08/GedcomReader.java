@@ -780,7 +780,7 @@ import java.time.Period;
 		if (recentBirths.size() == 0) System.out.println("There is no recent births");
 		else {
 			System.out.println("+-----+-------------------+---------+---------------+");
-			System.out.println("| ID  | Name              | Gender  | Deathday      |");
+			System.out.println("| ID  | Name              | Gender  | Birthday      |");
 			System.out.println("+-----+-------------------+---------+---------------+");
 			for (Individual recentB : recentBirths)
 				System.out.printf("|%-5s|%-19s|%-9s|%-15s|%n", recentB.getId(), recentB.getName(), recentB.getGender(), recentB.getBrithday());
