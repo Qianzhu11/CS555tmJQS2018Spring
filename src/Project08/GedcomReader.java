@@ -529,25 +529,42 @@ import java.time.Period;
  			} else if (month.equals("FEB") && day > 0 && day <= 28) return true; 
  		} 
  		return false; 
- 	} 
-      
-     public boolean uniqueId(List<String> ids) { 
- 		Set<String> set = new HashSet<String>(); 
- 		for (String id : ids) { 
- 			if (set.contains(id)) return false; 
- 			else set.add(id); 
-		} 
- 		return true; 
- 	} 
+    } 
+     
+     public List<Individual> getDeceased() {
+    	 List<Individual> res = new ArrayList<Individual>();
+    	 for (Individual i : individuals)
+    		 if (!i.isAlive())
+    			 res.add(i);
+    	 return res;
+     }
  		 
- 	public static void main(String[] args) { 
- 		GedcomReader gr = new GedcomReader(); 
- 		gr.readFile("testFile1.ged"); 
- 		gr.writeIndividual(); 
- 		gr.writeFamily(); 
- 		Collections.sort(gr.individuals, new SortIndividual()); 
- 		Collections.sort(gr.families, new SortFamily()); 
- 		 
+     public List<Individual> getUpcomingBirthday() {
+    	 List<Individual> res = new ArrayList<Individual>();
+    	 for (Individual i : individuals)
+    		 if (i.isAlive()) {
+    			 int birth = Integer.parseInt(i.getBrithday().replaceAll("-", "").substring(4,  8));
+        		 if (birth > 327 && birth < 427) res.add(i);	 
+    		 }
+    	 return res;
+     }
+     
+     public List<Individual> getRecentBirth() {
+    	 List<Individual> res = new ArrayList<Individual>();
+    	 for (Individual i : individuals) {
+    		 int birth = Integer.parseInt(i.getBrithday().replaceAll("-", ""));
+    		 if (20180327 - birth < 30 && 20180327 - birth > 0)
+    			 res.add(i);
+    	 }
+    	 return res;
+     }
+     public static void main(String[] args) { 
+    	 GedcomReader gr = new GedcomReader(); 
+    	 gr.readFile("testFile1.ged"); 
+    	 gr.writeIndividual(); 
+    	 gr.writeFamily(); 
+    	 Collections.sort(gr.individuals, new SortIndividual()); 
+    	 Collections.sort(gr.families, new SortFamily()); 
  
  
  		System.out.println("Individuals"); 
@@ -570,11 +587,8 @@ import java.time.Period;
  		} 
  		System.out.println("+-----+------------+------------+------------+--------------------+-----------+--------------------+------------------+"); 
  		System.out.println(); 
- 		 
-         int recentbirthscount = 0; 
+ 	
          int recentdeathscount = 0;  
-         int deceasedcount = 0;      //US29
-         int comingbirthdayscount = 0;      //US38
          
  		for (Individual individual : gr.individuals) { 
  			String birthday = individual.getBrithday(); 
@@ -599,19 +613,6 @@ import java.time.Period;
  					System.out.println("ERROR: INDIVIDUAL: US07: " + individual.getId() + ": More than 150 years old at death - Bitrh date " + individual.getBrithday() + ": Death " + individual.getDeath()); 
  				} 
  			} 
- 			 
-             if (gr.validateDate(birthday)) { 
-                int daysFromBirth = gr.getNumberOfDays(birthday);          
-                if (daysFromBirth <= 30) { 
-                    recentbirthscount++; 
-                    System.out.println("\nLIST: US35: All people who were borned in the last 30 days");  
-                    System.out.println("+-----+--------------------+--------+-----------+");  
-                    System.out.println("| ID  | Name               | Gender | Birthday  |");  
-                    System.out.println("+-----+--------------------+--------+-----------+");  
-                    System.out.printf("|%-5s|%-20s|%-8s|%-11s|%n\n", individual.getId(), individual.getName(), individual.getGender(), individual.getBrithday() );  
-                }  
-              
-             } 
              String deathdate = individual.getDeath();                   
              if (!deathdate.equals("NA") && gr.validateDate(deathdate)) {        
              	int daysFromDeath = gr.getNumberOfDays(deathdate);   
@@ -623,42 +624,10 @@ import java.time.Period;
                     System.out.println("+-----+--------------------+--------+-----------+");  
                     System.out.printf("|%-5s|%-20s|%-8s|%-11s|%n\n", individual.getId(), individual.getName(), individual.getGender(), individual.getDeath() );  
                   }  
-                 } 
-
-             if (!individual.isAlive()) { 
-                    deceasedcount++; 
-                    System.out.println("\nLIST: US29: deceased individual");  
-                    System.out.println("+-----+--------------------+--------+-----------+");  
-                    System.out.println("| ID  | Name               | Gender | Deathday  |");  
-                    System.out.println("+-----+--------------------+--------+-----------+");  
-                    System.out.printf("|%-5s|%-20s|%-8s|%-11s|%n\n", individual.getId(), individual.getName(), individual.getGender(), individual.getDeath() );  
-                    } 
-
-             if ( gr.validateDate(birthday) && individual.isAlive() ) { 
-                    int daysFrombirthdate = gr.getbirthdaysin30days(birthday);  
-                    if ( daysFrombirthdate >= -30 && daysFrombirthdate <= 30 ) { 
-                         comingbirthdayscount++; 
-                         System.out.println("\nLIST: US38: All living individual birthdays in the coming 30 days");  
-                         System.out.println("+-----+--------------------+--------+-----------+");  
-                         System.out.println("| ID  | Name               | Gender | Birthday  |");  
-                         System.out.println("+-----+--------------------+--------+-----------+");  
-                         System.out.printf("|%-5s|%-20s|%-8s|%-11s|%n\n", individual.getId(), individual.getName(), individual.getGender(), individual.getBrithday() );  
-                    }
-             }   
- 		}
- 		
- 		
- 		if (recentbirthscount == 0) {                 
- 			System.out.println("LIST: US35: None were borned in the last 30 days");   
-        }    
+                 }   
+ 		}   
         if (recentdeathscount == 0) {                 
         	System.out.println("LIST: US36: None died in the last 30 days");   
-        }  
-        if (deceasedcount == 0) {                 
-        	System.out.println("LIST: US29: There are no deceased individuals");   
-        }  
-        if (comingbirthdayscount == 0) {                 
-        	System.out.println("LIST: US38: There are no individual birthdays in the coming 30 days");   
         }
         
  		List<Family> families = gr.families; 
@@ -783,7 +752,41 @@ import java.time.Period;
             for (Individual in : livings) 
             	System.out.printf("|%-5s|%-20s|%n", in.getId(), in.getName());
 		}
+		
+		System.out.println("\nLIST: US29: List all deceased people");
+		List<Individual> deceased = gr.getDeceased();
+		if (deceased.size() == 0) System.out.println("There is no deceased people");
+		else {
+			System.out.println("+-----+-------------------+---------+---------------+");
+			System.out.println("| ID  | Name              | Gender  | Deathday      |");
+			System.out.println("+-----+-------------------+---------+---------------+");
+			for (Individual deaed : deceased)
+				System.out.printf("|%-5s|%-19s|%-9s|%-15s|%n", deaed.getId(), deaed.getName(), deaed.getGender(), deaed.getDeath());
+		}
+		
+		System.out.println("\nLIST: US38: List all upcoming birthday");
+		List<Individual> upcomingBirthday = gr.getUpcomingBirthday();
+		if (upcomingBirthday.size() == 0) System.out.println("There is no upcoming birthday");
+		else {
+			System.out.println("+-----+-------------------+---------+---------------+");
+			System.out.println("| ID  | Name              | Gender  | Deathday      |");
+			System.out.println("+-----+-------------------+---------+---------------+");
+			for (Individual birth : upcomingBirthday)
+				System.out.printf("|%-5s|%-19s|%-9s|%-15s|%n", birth.getId(), birth.getName(), birth.getGender(), birth.getBrithday());
+		}
+		
+		System.out.println("\nLIST: US35: List all recent births");
+		List<Individual> recentBirths = gr.getRecentBirth();
+		if (recentBirths.size() == 0) System.out.println("There is no recent births");
+		else {
+			System.out.println("+-----+-------------------+---------+---------------+");
+			System.out.println("| ID  | Name              | Gender  | Deathday      |");
+			System.out.println("+-----+-------------------+---------+---------------+");
+			for (Individual recentB : recentBirths)
+				System.out.printf("|%-5s|%-19s|%-9s|%-15s|%n", recentB.getId(), recentB.getName(), recentB.getGender(), recentB.getBrithday());
+
+		}
  	} 
- } 
+} 
 
  

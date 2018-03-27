@@ -175,5 +175,30 @@ public class SprintTest {
 			assertTrue("ERROR: FAMILY: US10: " + family.getId() + " marriage before 14", gr.validateMarriageAge(husbandBirthday, marry) || gr.validateMarriageAge(wifeBirthday, marry));
 		}
 	}
-
+	
+	@Test
+	public void testUserStory34() {
+		List l = gr.getLargeAgeDiff();
+		assertTrue("ERROR: US34: Listing of large difference age processing is broken", l.size() >= 0);
+	}
+	
+	@Test
+	public void testUserStory32() {
+		List l = gr.getMutipleBirths();
+		assertTrue("ERROR: US32: Listing of mutiple births processing is broken", l.size() >= 0);
+	}
+	
+	@Test 
+	public void testUserStory30() {
+		List l = gr.getLivingMarried();
+		assertTrue("ERROR: US30: Listing of living married processing is broken", l.size() >= 0);
+	}
+	
+	@Test
+	public void testUserStory14() {
+		List<List<String>> l = gr.getMutipleBirths();
+		int max = 0;
+		for (List t : l) max = Math.max(max, t.size());
+		assertTrue("ERROR: US14: multiple births should be less than or equal to 5", max <= 5);
+	}
 }

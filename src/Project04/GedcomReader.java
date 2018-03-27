@@ -308,10 +308,69 @@ public class GedcomReader {
 		}
 		return false;
 	}
+	
+	public List<Individual> getLivingMarried() {
+		List<Individual> res = new ArrayList<Individual>();
+		for (Individual i : individuals)
+			if (i.isAlive() && !i.getSpouse().equals("NA"))
+				res.add(i);
+		return res;
+	}
+	
+	public List<Individual> getRecentSurvivors() {
+		List<Individual> res = new ArrayList<Individual>();
+		for (Individual i : individuals) {
+			String target = i.getBrithday().replaceAll("-", "");
+			String cur = "20180326";
+			int diff = Integer.parseInt(cur) - Integer.parseInt(target);
+			if (diff < 30 && diff >= 0)
+				res.add(i);
+		}
+		return res;
+	}
+	
+	public List<List<String>> getLargeAgeDiff() {
+		List<List<String>> res = new ArrayList<List<String>>();
+		for (Family f : families) {
+			Individual h = map.get(f.getHusbandId());
+			Individual w = map.get(f.getWifeId());
+			int mYear = Integer.parseInt(f.getMarried().substring(0, 4));
+			int hYear = mYear - Integer.parseInt(h.getBrithday().substring(0, 4));
+			int wYear = mYear - Integer.parseInt(w.getBrithday().substring(0, 4));
+			if (hYear > 2 * wYear || wYear > 2 * hYear) {
+				List<String> l = new ArrayList<String>();
+				l.add(f.getId());
+				l.add(h.getName());
+				l.add(w.getName());
+				l.add("" + hYear);
+				l.add("" + wYear);
+				res.add(l);
+			}
+		}
+		return res;
+	}
+	
+	public List<List<String>> getMutipleBirths() {
+		List<List<String>> res = new ArrayList<List<String>>();
+		for (Family f : families) {
+			Map<String, List<String>> _m = new HashMap<String, List<String>>();
+			List<String> children = f.getChildren();
+			for (String id : children) {
+				String birth = map.get(id).getBrithday();
+				if (!_m.containsKey(birth))
+					_m.put(birth, new ArrayList<String>());
+				_m.get(birth).add(id);
+			}
+			for (String date : _m.keySet())
+				if (_m.get(date).size() >= 2)
+					res.add(_m.get(date));
+		}
+		return res;
+	}
 		
 	public static void main(String[] args) {
 		GedcomReader gr = new GedcomReader();
-		gr.readFile("testFile.ged");
+		gr.readFile("sample.ged");
 		gr.writeIndividual();
 		gr.writeFamily();
 		Collections.sort(gr.individuals, new SortIndividual());
@@ -407,10 +466,49 @@ public class GedcomReader {
 					System.out.println("ERROR: FAMILY: US06: " + family.getId() + ": Divorced " + family.getDivorced() + " after " + who + " (" + temp.getId() + ") death on " + temp.getDeath());				
 				}
 			}
-			if(!gr.validateMarriageAge(husbandBirthday, marry) || !gr.validateMarriageAge(wifeBirthday, marry)){
+			if (!gr.validateMarriageAge(husbandBirthday, marry) || !gr.validateMarriageAge(wifeBirthday, marry)){
 				System.out.println("ERROR: FAMILY: US10: " + family.getId() + " marriage before 14");
 			}
-			
+		}
+		System.out.println("\nLIST: US32: List multiple births");
+		List<List<String>> multipleBirths = gr.getMutipleBirths();
+		if (multipleBirths.size() == 0) System.out.println("There is no multiple births");
+		else {
+			System.out.println("+-----+--------------------+-----------+"); 
+			System.out.println("| ID  | Name               | Birthday  |"); 
+			for (List<String> cur : multipleBirths)
+				for (String id : cur)
+					System.out.printf("|%-5s|%-20s|%-11s|%n", id, gr.map.get(id).getName(), gr.map.get(id).getBrithday()); 
+			System.out.println("+-----+--------------------+-----------+"); 
+		}
+		
+		System.out.println("\nLIST: US34: List large age differences");
+		List<List<String>> largeAge = gr.getLargeAgeDiff();
+		if (largeAge.size() == 0) System.out.println("There are no such couples");
+		else {
+            System.out.println("+-----+--------------------+-------------------+------------------------+--------------------+");  
+            System.out.println("| ID  | HusbandName        |WifeName           |Husband age when married|Wife age when married");  
+            for (List<String> t : largeAge) 
+            	System.out.printf("|%-5s|%-20s|%-19s|%-24s|%-20s|%n", t.get(0), t.get(1), t.get(2), t.get(3), t.get(4));
+            System.out.println("+-----+--------------------+-------------------+------------------------+--------------------+");  
+    	}
+		int maxBirth = 0;
+		String bDate = "";
+		for (List<String> temp : multipleBirths)
+			if (temp.size() > maxBirth) {
+				maxBirth = temp.size();
+				bDate = gr.map.get(temp.get(0)).getBrithday();
+			}
+		if (maxBirth >= 6) System.out.println("ERROR: " + maxBirth + " people were born in" + bDate);
+		
+		List<Individual> livings = gr.getLivingMarried();
+		System.out.println("\nLIST: US30: List all living married");
+		if (livings.size() == 0) System.out.println("There are no living married");
+		else {
+            System.out.println("+-----+-------------+");  
+            System.out.println("| ID  | Name        |");  
+            for (Individual in : livings) 
+            	System.out.printf("|%-5s|%-20s|%n", in.getId(), in.getName());
 		}
 	}
 }
