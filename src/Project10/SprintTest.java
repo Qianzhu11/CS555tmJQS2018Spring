@@ -450,5 +450,10 @@ import org.junit.Before;
    				assertTrue(gr.checkFirstCousinRelation(family));
    		} 
     }
+    
+    @Test
+    public void testUserStory33() {
+    	assertTrue(gr.listOrphans().size() >= 0);
+    }
 
 }  

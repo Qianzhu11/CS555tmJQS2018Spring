@@ -653,29 +653,23 @@ import java.time.Period;
   			} else if (month.equals("FEB") && day > 0 && day <= 28) return true; 
   		} 
   		return false; 
-     }
+     } 
      
-     public void sortSiblings() {
-    	 for (Family f : families)
-    		 Collections.sort(f.getChildren(), (a, b) -> map.get(a).getAge() - map.get(b).getAge());
-     }
-     
-     public List<List<String>> listOrphans() {
-    	 List<List<String>> res = new ArrayList<List<String>>();
+     public List<String> listOrphans() {
+    	 List<String> res = new ArrayList<String>();
     	 for (Family f : families) 
     		 if (!map.get(f.getHusbandId()).isAlive() && !map.get(f.getWifeId()).isAlive())
-    			 res.add(f.getChildren());
+    			 res.addAll(f.getChildren());
     	 return res;
      }
 
       public static void main(String[] args) { 
      	 GedcomReader gr = new GedcomReader(); 
-     	 gr.readFile("testFile2.ged"); 
+     	 gr.readFile("testFile1.ged"); 
      	 gr.writeIndividual(); 
      	 gr.writeFamily(); 
      	 Collections.sort(gr.individuals, new SortIndividual()); 
      	 Collections.sort(gr.families, new SortFamily()); 
-     	 gr.sortSiblings();
   
   
   		System.out.println("Individuals"); 
@@ -934,6 +928,18 @@ import java.time.Period;
  				System.out.printf("|%-5s|%-19s|%-9s|%-15s|%n", recentB.getId(), recentB.getName(), recentB.getGender(), recentB.getBrithday());
 
  		}
- 		
+ 		List<String> orphans = gr.listOrphans();
+ 		System.out.println("\nLIST: US33: List all orphans");
+ 		if (orphans.size() == 0)
+ 			System.out.println("There are no orphans");
+ 		else {
+ 			System.out.println("+-----+-------------------+---------+---------------+");
+ 			System.out.println("| ID  | Name              | Gender  | Birthday      |");
+ 			System.out.println("+-----+-------------------+---------+---------------+");
+ 			for (String s : orphans) {
+ 				Individual i = gr.map.get(s);
+ 				System.out.printf("|%-5s|%-19s|%-9s|%-15s|%n", i.getId(), i.getName(), i.getGender(), i.getBrithday());
+ 			}
+ 		}
   	} 
  } 
